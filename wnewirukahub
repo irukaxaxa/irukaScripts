@@ -36,9 +36,6 @@ local superRange = false
 local noClipConnection =nil
 local removeAnimationConnection =nil
 local removeAnimation =false
-local PBlade = game.Players.LocalPlayer;
-local QBlade = getupvalues(require(PBlade.PlayerScripts.CombatFramework));
-local RBlade = QBlade[2];
 
 local lastTime = tick()
 local frameCount = 0
@@ -1364,52 +1361,51 @@ local function GetEnemiesInRange(character, range)
 end
 
 local function attackNoCoolDown()
-	local U = RBlade.activeController;
+	local character = player.Character
+	local hrp = character:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+	local equippedWeapon
+	for _, item in ipairs(character:GetChildren()) do
+		if item:IsA("Tool") then
+			equippedWeapon = item
+			break
+		end
+	end
+	if not equippedWeapon then return end
 	if hrp:FindFirstChild("Buddha") and superRange then
 		attackRange =1000
-	else
-		attackRange =60
 	end
-	for h = 1, 1 do
-		local V = (require(game.ReplicatedStorage.CombatFramework.RigLib)).getBladeHits(PBlade.Character, {
-			PBlade.Character.HumanoidRootPart
-		}, attackRange);
-		local W = {};
-		local X = {};
-		for k, i in pairs(V) do
-			if i.Parent:FindFirstChild("HumanoidRootPart") and (not X[i.Parent]) then
-				table.insert(W, i.Parent.HumanoidRootPart);
-				X[i.Parent] = true;
-			end;
-		end;
-		V = W;
-		if #V > 0 then
-			local Y = debug.getupvalue(U.attack, 5);
-			local Z = debug.getupvalue(U.attack, 6);
-			local _ = debug.getupvalue(U.attack, 4);
-			local a0 = debug.getupvalue(U.attack, 7);
-			local a1 = (Y * 798405 + _ * 727595) % Z;
-			local a2 = _ * 798405;
-			(function()
-				a1 = (a1 * Z + a2) % 1099511627776;
-				Y = math.floor(a1 / Z);
-				_ = a1 - Y * Z;
-			end)();
-			a0 = a0 + 1;
-			debug.setupvalue(U.attack, 5, Y);
-			debug.setupvalue(U.attack, 6, Z);
-			debug.setupvalue(U.attack, 4, _);
-			debug.setupvalue(U.attack, 7, a0);
+	local enemiesInRange = GetEnemiesInRange(character, attackRange)
+	if equippedWeapon:FindFirstChild("LeftClickRemote") then
+		local attackCount = 1  
+		for _, enemy in ipairs(enemiesInRange) do
+			local rootPart = enemy:FindFirstChild("HumanoidRootPart")
+			if rootPart then
+				local direction = (rootPart.Position - character:GetPivot().Position).Unit
+				equippedWeapon.LeftClickRemote:FireServer(direction, attackCount)
+				attackCount = attackCount + 1
+			end
+		end
+	else
+		local targets, mainTarget = {}, nil
+		for _, enemy in ipairs(enemiesInRange) do
+			if not enemy:GetAttribute("IsBoat") then
+				local head = enemy:FindFirstChild("Head")
+				if head then
+					table.insert(targets, { enemy, head })
+					mainTarget = head
+				end
+			end
+		end
+		if mainTarget then
+			local attackEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net"):WaitForChild("RE/RegisterAttack")
+			local hitEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net"):WaitForChild("RE/RegisterHit")
 			pcall(function()
-				if PBlade.Character:FindFirstChildOfClass("Tool") and U.blades and U.blades[1] then
-					U.animator.anims.basic[1]:Play(0.01, 0.01, 0.01);
-					(game:GetService("ReplicatedStorage")).RigControllerEvent:FireServer("weaponChange", tostring(GetCurrentBlade()));
-					game.ReplicatedStorage.Remotes.Validator:FireServer(math.floor(a1 / 1099511627776 * 16777215), a0);
-					(game:GetService("ReplicatedStorage")).RigControllerEvent:FireServer("hit", V, h, "");
-				end;
-			end);
-		end;
-	end;
+				attackEvent:FireServer(0.1)
+				hitEvent:FireServer(mainTarget, targets)
+			end)
+		end
+	end
 end
 
 local fastAttack = false
