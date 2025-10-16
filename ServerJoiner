@@ -95,9 +95,19 @@ round(joinButton)
 round(copyButton)
 round(closeBtn)
 
+-- === Job ID保持 ===
+_G.Job = ""
+
+-- === TextBox入力完了時 ===
+textbox.FocusLost:Connect(function(enterPressed)
+	if enterPressed then
+		_G.Job = textbox.Text
+	end
+end)
+
 -- === Joinボタン ===
 joinButton.MouseButton1Click:Connect(function()
-	if textbox.Text ~= "" then
+	if _G.Job ~= "" then
 		TeleportService:TeleportToPlaceInstance(game.PlaceId, _G.Job, player)
 	else
 		joinButton.Text = "Please Enter Job ID!"
