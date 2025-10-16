@@ -1,0 +1,137 @@
+-- サービス取得
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+local player = Players.LocalPlayer
+
+-- === GUI作成 ===
+local gui = Instance.new("ScreenGui")
+gui.Name = "ServerJoinerGUI"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- === メインフレーム ===
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 300, 0, 250)
+frame.Position = UDim2.new(0.5, -150, 0.5, -125)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = gui
+
+-- === タイトルバー ===
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 40)
+titleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+titleBar.Parent = frame
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -40, 1, 0)
+title.Position = UDim2.new(0, 10, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "🔗 Server Joiner"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 22
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = titleBar
+
+-- === 閉じるボタン ===
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -35, 0, 5)
+closeBtn.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+closeBtn.Text = "X"
+closeBtn.TextColor3 = Color3.new(1, 1, 1)
+closeBtn.Font = Enum.Font.SourceSansBold
+closeBtn.TextSize = 20
+closeBtn.Parent = titleBar
+
+-- === Job ID入力欄 ===
+local textbox = Instance.new("TextBox")
+textbox.PlaceholderText = "Enter Server Job ID..."
+textbox.Size = UDim2.new(1, -40, 0, 40)
+textbox.Position = UDim2.new(0, 20, 0, 60)
+textbox.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+textbox.TextColor3 = Color3.fromRGB(255, 255, 255)
+textbox.Text = ""
+textbox.ClearTextOnFocus = false
+textbox.Font = Enum.Font.SourceSans
+textbox.TextSize = 18
+textbox.Parent = frame
+
+-- === Joinボタン ===
+local joinButton = Instance.new("TextButton")
+joinButton.Size = UDim2.new(1, -40, 0, 40)
+joinButton.Position = UDim2.new(0, 20, 0, 120)
+joinButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+joinButton.Text = "Join Server"
+joinButton.TextColor3 = Color3.new(1, 1, 1)
+joinButton.Font = Enum.Font.SourceSansBold
+joinButton.TextSize = 20
+joinButton.Parent = frame
+
+-- === 自分のJob IDコピー用ボタン ===
+local copyButton = Instance.new("TextButton")
+copyButton.Size = UDim2.new(1, -40, 0, 40)
+copyButton.Position = UDim2.new(0, 20, 0, 180)
+copyButton.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+copyButton.Text = "Copy My Job ID"
+copyButton.TextColor3 = Color3.new(1, 1, 1)
+copyButton.Font = Enum.Font.SourceSansBold
+copyButton.TextSize = 20
+copyButton.Parent = frame
+
+-- === 丸角関数 ===
+local function round(obj)
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, 10)
+	c.Parent = obj
+end
+round(frame)
+round(textbox)
+round(joinButton)
+round(copyButton)
+round(closeBtn)
+
+-- === Job ID保持 ===
+_G.Job = ""
+
+-- === TextBox入力完了時 ===
+textbox.FocusLost:Connect(function(enterPressed)
+	if enterPressed then
+		_G.Job = textbox.Text
+	end
+end)
+
+-- === Joinボタン ===
+joinButton.MouseButton1Click:Connect(function()
+	if _G.Job ~= "" then
+		TeleportService:TeleportToPlaceInstance(game.PlaceId, _G.Job, player)
+	else
+		joinButton.Text = "Please Enter Job ID!"
+		task.wait(1.2)
+		joinButton.Text = "Join Server"
+	end
+end)
+
+-- === Copyボタン ===
+copyButton.MouseButton1Click:Connect(function()
+	local myJob = tostring(game.JobId)
+	if setclipboard then
+		setclipboard(myJob)
+		copyButton.Text = "Copied!"
+		task.wait(1.2)
+		copyButton.Text = "Copy My Job ID"
+	else
+		copyButton.Text = "Cannot Copy Here"
+		task.wait(1.2)
+		copyButton.Text = "Copy My Job ID"
+	end
+end)
+
+-- === 閉じるボタン ===
+closeBtn.MouseButton1Click:Connect(function()
+	gui:Destroy()
+end)
