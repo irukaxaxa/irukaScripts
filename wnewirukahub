@@ -188,6 +188,7 @@ local homeButton = createTabButton(tabFrame, "Home")
 local espButton = createTabButton(tabFrame, "ESP")
 local otherButton = createTabButton(tabFrame, "Other")
 local bloxfruitsButton = createTabButton(tabFrame, "BF")
+local configButton = createTabButton(tabFrame, "Config")
 
 local espFrame = Instance.new("Frame", mainFrame)
 espFrame.Size = UDim2.new(1, 0, 1, -50)
@@ -210,27 +211,33 @@ otherRightFrame.Size = UDim2.new(0, 250, 1, -35)
 otherRightFrame.Position = UDim2.new(0, 180, 0, 35)
 otherRightFrame.BackgroundTransparency = 1
 otherRightFrame.Visible = false
+
 local otherLeftScroll = Instance.new("ScrollingFrame", otherLeftFrame)
 otherLeftScroll.Size = UDim2.new(1, 0, 1, 0)
 otherLeftScroll.BackgroundTransparency = 1
 otherLeftScroll.ScrollBarThickness = 6
 otherLeftScroll.ClipsDescendants = true
+	
 local otherLeftLayout = Instance.new("UIListLayout", otherLeftScroll)
 otherLeftLayout.SortOrder = Enum.SortOrder.LayoutOrder
 otherLeftLayout.Padding = UDim.new(0, 6)
+
 local otherRightScroll = Instance.new("ScrollingFrame", otherRightFrame)
 otherRightScroll.Size = UDim2.new(1, 0, 1, 0)
 otherRightScroll.BackgroundTransparency = 1
 otherRightScroll.ScrollBarThickness = 6
 otherRightScroll.ClipsDescendants = true
+
 local otherRightLayout = Instance.new("UIListLayout", otherRightScroll)
 otherRightLayout.SortOrder = Enum.SortOrder.LayoutOrder
 otherRightLayout.Padding = UDim.new(0, 6)
+
 local bloxfruitsLeftFrame = Instance.new("Frame", mainFrame)
 bloxfruitsLeftFrame.Size = UDim2.new(0, 180, 1, -35)
 bloxfruitsLeftFrame.Position = UDim2.new(0, 0, 0, 35)
 bloxfruitsLeftFrame.BackgroundTransparency = 1
 bloxfruitsLeftFrame.Visible = false
+
 local bloxfruitsRightFrame = Instance.new("Frame", mainFrame)
 bloxfruitsRightFrame.Size = UDim2.new(0, 250, 1, -35)
 bloxfruitsRightFrame.Position = UDim2.new(0, 180, 0, 35)
@@ -257,6 +264,37 @@ local bloxfruitsRightLayout = Instance.new("UIListLayout", bloxfruitsRightScroll
 bloxfruitsRightLayout.SortOrder = Enum.SortOrder.LayoutOrder
 bloxfruitsRightLayout.Padding = UDim.new(0, 6)
 
+local configLeftFrame = Instance.new("Frame", mainFrame)
+configLeftFrame.Size = UDim2.new(0, 180, 1, -35)
+configLeftFrame.Position = UDim2.new(0, 0, 0, 35)
+configLeftFrame.BackgroundTransparency = 1
+configLeftFrame.Visible = false
+
+local configRightFrame = Instance.new("Frame", mainFrame)
+configRightFrame.Size = UDim2.new(0, 250, 1, -35)
+configRightFrame.Position = UDim2.new(0, 180, 0, 35)
+configRightFrame.BackgroundTransparency = 1
+configRightFrame.Visible = false
+
+local configLeftScroll = Instance.new("ScrollingFrame", configLeftFrame)
+configLeftScroll.Size = UDim2.new(1, 0, 1, 0)
+configLeftScroll.BackgroundTransparency = 1
+configLeftScroll.ScrollBarThickness = 6
+configLeftScroll.ClipsDescendants = true
+
+local configLeftLayout = Instance.new("UIListLayout", configLeftScroll)
+configLeftLayout.SortOrder = Enum.SortOrder.LayoutOrder
+configLeftLayout.Padding = UDim.new(0, 6)
+
+local configRightScroll = Instance.new("ScrollingFrame", configRightFrame)
+configRightScroll.Size = UDim2.new(1, 0, 1, 0)
+configRightScroll.BackgroundTransparency = 1
+configRightScroll.ScrollBarThickness = 6
+configRightScroll.ClipsDescendants = true
+
+local configRightLayout = Instance.new("UIListLayout", configRightScroll)
+configRightLayout.SortOrder = Enum.SortOrder.LayoutOrder
+configRightLayout.Padding = UDim.new(0, 6)
 
 local tpGui = Instance.new("ScreenGui")
 tpGui.Name = "TPGui"
@@ -297,6 +335,8 @@ local function switchPage(page)
 		otherRightFrame.Visible = false
 		bloxfruitsLeftFrame.Visible = false
 		bloxfruitsRightFrame.Visible = false
+		configLeftFrame.Visible = false
+		configRightFrame.Visible = false
 	elseif page == "ESP" then
 		mainLeftFrame.Visible = false
 		mainRightFrame.Visible = false
@@ -305,6 +345,8 @@ local function switchPage(page)
 		otherRightFrame.Visible = false
 		bloxfruitsLeftFrame.Visible = false
 		bloxfruitsRightFrame.Visible = false
+		configLeftFrame.Visible = false
+		configRightFrame.Visible = false
 	elseif page == "Other" then
 		mainLeftFrame.Visible = false
 		mainRightFrame.Visible = false
@@ -313,6 +355,8 @@ local function switchPage(page)
 		otherRightFrame.Visible = true
 		bloxfruitsLeftFrame.Visible = false
 		bloxfruitsRightFrame.Visible = false
+		configLeftFrame.Visible = false
+		configRightFrame.Visible = false
 	elseif page == "Bloxfruits" then
 		mainLeftFrame.Visible = false
 		mainRightFrame.Visible = false
@@ -321,6 +365,18 @@ local function switchPage(page)
 		otherRightFrame.Visible = false
 		bloxfruitsLeftFrame.Visible = true
 		bloxfruitsRightFrame.Visible = true
+		configLeftFrame.Visible = false
+		configRightFrame.Visible = false
+	elseif page == "Config" then
+		mainLeftFrame.Visible = false
+		mainRightFrame.Visible = false
+		espFrame.Visible = false
+		otherLeftFrame.Visible = false
+		otherRightFrame.Visible = false
+		bloxfruitsLeftFrame.Visible = false
+		bloxfruitsRightFrame.Visible = false
+		configLeftFrame.Visible = false
+		configRightFrame.Visible = false
 	end 
 end
 
@@ -340,9 +396,12 @@ bloxfruitsButton.MouseButton1Click:Connect(function()
 	switchPage("Bloxfruits")
 end)
 
+configButton.MouseButton1Click:Connect(function()
+	switchPage("Config")
+end)
+
 switchPage("Home")
 
--- Speed入力
 local speedLabel = Instance.new("TextLabel", mainLeftFrame)
 speedLabel.Size = UDim2.new(0, 80, 0, 30)
 speedLabel.Position = UDim2.new(0, 10, 0, 180)
@@ -371,7 +430,6 @@ speedBox.FocusLost:Connect(function()
 	end
 end)
 
--- Toggle Gui
 local toggleButton = Instance.new("ImageButton")
 toggleButton.Size = UDim2.new(0, 50, 0, 50)
 toggleButton.Position = UDim2.new(0, 100, 0, 100)
@@ -410,7 +468,6 @@ local function showNotification(text, color)
 	notifyLabel.TextXAlignment = Enum.TextXAlignment.Left
 	notifyLabel.TextYAlignment = Enum.TextYAlignment.Top
 
-	-- 右からスライドイン
 	local tweenIn = TweenService:Create(
 		notifyFrame,
 		TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
@@ -418,7 +475,6 @@ local function showNotification(text, color)
 	)
 	tweenIn:Play()
 
-	-- 一定時間待って右にスライドアウト
 	tweenIn.Completed:Connect(function()
 		task.delay(3, function()
 			local tweenOut = TweenService:Create(
@@ -470,14 +526,12 @@ elseif placeId == 7449423635 then
 end
 
 local function updatePlayerList()
-	-- 既存のリストをクリア
 	for _, child in ipairs(dropdownFrame:GetChildren()) do
 		if child:IsA("TextButton") then
 			child:Destroy()
 		end
 	end
 
-	-- 全プレイヤーを追加
 	for _, plr in ipairs(Players:GetPlayers()) do
 		if plr ~= player then
 			local btn = Instance.new("TextButton")
@@ -499,7 +553,6 @@ local function updatePlayerList()
 		end
 	end
 
-	-- UIListLayoutで自動整列
 	local layout = dropdownFrame:FindFirstChildOfClass("UIListLayout")
 	if not layout then
 		layout = Instance.new("UIListLayout")
@@ -691,19 +744,22 @@ local function addNameEsp(plr)
 	billboard.Parent = plr.Character.Head
 
 	local humanoid = plr.Character:FindFirstChild("Humanoid")
-	if humanoid then
-		table.insert(connections, humanoid.HealthChanged:Connect(function()
-			if humanoid.Health <= 0 then return end
-			local distance = 0
-			if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-				distance = (player.Character.HumanoidRootPart.Position - plr.Character.HumanoidRootPart.Position).Magnitude
-			end
-			label.Text = string.format(
-				"<font color='rgb(255,255,255)'>%s</font> <font color='rgb(0,255,0)'> %.0f m </font>\n<font color='rgb(0,255,255)'>[%d / %d]</font>",
-				plr.Name, distance, math.floor(humanoid.Health), humanoid.MaxHealth
-			)
-		end))
+	local function updateLabel()
+		local distance = 0
+		if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and humanoid then
+			distance = (player.Character.HumanoidRootPart.Position - plr.Character.HumanoidRootPart.Position).Magnitude
+		end
+		label.Text = string.format(
+			"<font color='rgb(255,255,255)'>%s</font> <font color='rgb(0,255,0)'> %.0f m </font>\n<font color='rgb(0,255,255)'>[%d / %d]</font>",
+			plr.Name, distance, math.floor(humanoid.Health), humanoid.MaxHealth
+		)
 	end
+
+	updateLabel()
+
+	table.insert(connections, humanoid.HealthChanged:Connect(updateLabel))
+	table.insert(connections, RunService.RenderStepped:Connect(updateLabel))
+
 end
 local function addBoxEsp(plr, v2)
 	if not plr.Character or not plr.Character:FindFirstChild("HumanoidRootPart") then return end
@@ -721,7 +777,7 @@ local function addBoxEsp(plr, v2)
 	box.Parent = hrp
 end
 task.spawn(function()
-	while task.wait(0.03) do
+	while task.wait(.1) do
 		if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then continue end
 		local myHRP = player.Character.HumanoidRootPart
 		local myPos, onScreen1 = camera:WorldToViewportPoint(myHRP.Position)
@@ -775,40 +831,104 @@ task.spawn(function()
 		end
 	end
 end)
-createSwitch(espFrame,"Name ESP",false,function(state)
+local nameespSwitch = createSwitch(espFrame, "Name ESP", false, function(state)
 	espEnabled = state
+	if state then
+		for _, plr in ipairs(Players:GetPlayers()) do
+			if plr ~= player then
+				addNameEsp(plr)
+			end
+		end
+	else
+		for _, plr in ipairs(Players:GetPlayers()) do
+			if plr.Character and plr.Character:FindFirstChild("Head") then
+				local esp = plr.Character.Head:FindFirstChild("ESP")
+				connections = nil
+				if esp then esp:Destroy() end
+			end
+		end
+	end
 end)
-createSwitch(espFrame,"Box ESP V1",false,function(state)
+local box1espSwitch = createSwitch(espFrame, "Box ESP V1", false, function(state)
 	boxEspV1Enabled = state
+	if state then
+		boxEspV2Enabled = false 
+		for _, plr in ipairs(Players:GetPlayers()) do
+			if plr ~= player then
+				addBoxEsp(plr, false)
+			end
+		end
+	else
+		for _, plr in ipairs(Players:GetPlayers()) do
+			if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+				local hrp = plr.Character.HumanoidRootPart
+				local box = hrp:FindFirstChild("BoxESP")
+				if box then box:Destroy() end
+			end
+		end
+	end
 end)
-createSwitch(espFrame,"Box ESP V2",false,function(state)
+local box2espSwitch = createSwitch(espFrame, "Box ESP V2", false, function(state)
 	boxEspV2Enabled = state
+	if state then
+		boxEspV1Enabled = false 
+		for _, plr in ipairs(Players:GetPlayers()) do
+			if plr ~= player then
+				addBoxEsp(plr, true)
+			end
+		end
+	else
+		for _, plr in ipairs(Players:GetPlayers()) do
+			if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+				local hrp = plr.Character.HumanoidRootPart
+				local box = hrp:FindFirstChild("BoxESP")
+				if box then box:Destroy() end
+			end
+		end
+	end
 end)
-createSwitch(espFrame,"Tracer ESP",false,function(state)
+local tracerespSwitch = createSwitch(espFrame, "Tracer ESP", false, function(state)
 	tracerEnabled = state
+	if state then
+		for _, plr in ipairs(Players:GetPlayers()) do
+			if plr ~= player and not tracers[plr] and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+				local line = Drawing.new("Line")
+				line.Thickness = 2
+				line.Color = Color3.fromRGB(222,225,255)
+				tracers[plr] = line
+			end
+		end
+	else
+		for plr, line in pairs(tracers) do
+			if line then
+				line:Remove()
+			end
+			tracers[plr] = nil
+		end
+	end
 end)
-createSwitch(buttonScroll, "Move to Target", false, function(state)
+local movingSwitch =createSwitch(buttonScroll, "Move to Target", false, function(state)
 	moving = state
 end)
-createSwitch(buttonScroll, "Tween Mode (TP/Tween)", true, function(state)
+local moveModeSwitch =createSwitch(buttonScroll, "Tween Mode (TP/Tween)", true, function(state)
 	useTween = state
 end)
-createSwitch(buttonScroll, "Cam Lock", false, function(state)
+local camLockSwitch =createSwitch(buttonScroll, "Cam Lock", false, function(state)
 	camLock = state
 end)
-createSwitch(buttonScroll, "Player View", false, function(state)
+local viewSwitch =createSwitch(buttonScroll, "Player View", false, function(state)
 	playerView =state
 end)
-createSwitch(buttonScroll, "Random Target", false, function(state)
+local randomSwitch =createSwitch(buttonScroll, "Random Target", false, function(state)
 	randomMode = state
 end)
-createSwitch(buttonScroll, "Team Check", false, function(state)
+local teamSwitch =createSwitch(buttonScroll, "Team Check", false, function(state)
 	teamCheck = state
 end)
-createSwitch(buttonScroll, "Random Type (Full/Near)", true, function(state)
+local randomModeSwitch =createSwitch(buttonScroll, "Random Type (Full/Near)", true, function(state)
 	randomTypeNear = state
 end)
-createSwitch(buttonScroll, "Wall Check", false, function(state)
+local tracerespSwitch =createSwitch(buttonScroll, "Wall Check", false, function(state)
 	wallCheck = state
 end)
 local function setHitbox()
@@ -1038,7 +1158,7 @@ elseif bloxFruitsMode and sea =="3rd" then
 	createDraggableButton("Mansion", "🏨", UDim2.new(0, 10, 0, 10), pos1)
 	createDraggableButton("Tiki", "⚓", UDim2.new(0, 120, 0, 10), pos2)
 end
-local changeTeamButton =createButton(bloxfruitsLeftScroll,"Change Team").MouseButton1Click:Connect(function(state)
+local changeTeamButton =createButton(bloxfruitsLeftScroll,"Change Team").MouseButton1Click:Connect(function()
 	if player.Team == "Pirates" then
 		game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("SetTeam", "Marines")
 	else
