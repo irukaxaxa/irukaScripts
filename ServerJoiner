@@ -100,10 +100,8 @@ round(closeBtn)
 _G.Job = ""
 
 -- === TextBox入力完了時 ===
-textbox.FocusLost:Connect(function(enterPressed)
-	if enterPressed then
-		_G.Job = textbox.Text
-	end
+textbox.FocusLost:Connect(function()
+	_G.Job = textbox.Text
 end)
 
 -- === Joinボタン ===
