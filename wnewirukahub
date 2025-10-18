@@ -45,7 +45,7 @@ local frameCount = 0
 local fps = 0
 -----------------------------
 local tracers = {}
-local connections = {}
+local espConnections = {}
 -----------------------------
 local function createFollowPlatform(position)
 	if followPlatform then
@@ -757,8 +757,10 @@ local function addNameEsp(plr)
 
 	updateLabel()
 
-	table.insert(connections, humanoid.HealthChanged:Connect(updateLabel))
-	table.insert(connections, RunService.RenderStepped:Connect(updateLabel))
+	espConnections[plr] = {
+		humanoid.HealthChanged:Connect(updateLabel),
+		RunService.RenderStepped:Connect(updateLabel)
+	}
 
 end
 local function addBoxEsp(plr, v2)
@@ -797,13 +799,13 @@ task.spawn(function()
 				end
 				continue
 			end
-			if espEnabled and not head:FindFirstChild("ESP") then
+			if espEnabled then
 				addNameEsp(plr)
 			end
-			if boxEspV1Enabled and not hrp:FindFirstChild("BoxESP") then
+			if boxEspV1Enabled then
 				addBoxEsp(plr,false)
 			end
-			if boxEspV2Enabled and not hrp:FindFirstChild("BoxESP") then
+			if boxEspV2Enabled then
 				addBoxEsp(plr,true)
 			end
 			if tracerEnabled then
@@ -843,7 +845,12 @@ local nameespSwitch = createSwitch(espFrame, "Name ESP", false, function(state)
 		for _, plr in ipairs(Players:GetPlayers()) do
 			if plr.Character and plr.Character:FindFirstChild("Head") then
 				local esp = plr.Character.Head:FindFirstChild("ESP")
-				connections = nil
+				if espConnections[plr] then
+					for _, c in ipairs(espConnections[plr]) do
+						c:Disconnect()
+					end
+					espConnections[plr] = nil
+				end
 				if esp then esp:Destroy() end
 			end
 		end
