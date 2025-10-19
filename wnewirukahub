@@ -39,6 +39,7 @@ local superRange = false
 local noClipConnection =nil
 local removeAnimationConnection =nil
 local removeAnimation =false
+local Japanese = false
 -----------------------------
 local lastTime = tick()
 local frameCount = 0
@@ -375,8 +376,8 @@ local function switchPage(page)
 		otherRightFrame.Visible = false
 		bloxfruitsLeftFrame.Visible = false
 		bloxfruitsRightFrame.Visible = false
-		configLeftFrame.Visible = false
-		configRightFrame.Visible = false
+		configLeftFrame.Visible = true
+		configRightFrame.Visible = true
 	end 
 end
 
@@ -445,7 +446,7 @@ toggleButton.MouseButton1Click:Connect(function()
 	mainFrame.Visible = not mainFrame.Visible
 end)
 
-local function showNotification(text, color)
+local function showNotification(textEn,textJp, color)
 	local notifyFrame = Instance.new("Frame")
 	notifyFrame.Size = UDim2.new(0, 200, 0, 60)
 	notifyFrame.Position = UDim2.new(1, 210, 0, -70) -- 右外からスタート
@@ -461,7 +462,7 @@ local function showNotification(text, color)
 	notifyLabel.Size = UDim2.new(0.9, 0, 0.9, 0)
 	notifyLabel.Position =UDim2.new(0.05,0,0.05,0)
 	notifyLabel.BackgroundTransparency = 1
-	notifyLabel.Text = text
+	notifyLabel.Text = Japanese and textJp or textEn
 	notifyLabel.TextColor3 = color
 	notifyLabel.Font = Enum.Font.GothamBold
 	notifyLabel.TextSize = 16
@@ -500,7 +501,7 @@ local pos2
 if placeId == 4442272183 then
 	bloxFruitsMode = true
 	sea = "2nd"
-	showNotification("Success!\nBlox Fruits Mode ON(2nd)", Color3.fromRGB(255, 255, 255))
+	showNotification("Success!\nBlox Fruits Mode ON(2nd)","成功しました！\nブロックスフルーツモード(セカンド)", Color3.fromRGB(255, 255, 255))
 	islands = {
 		Vector3.new(-287, 305.9, 597.6),
 		Vector3.new(2284.9, 14.9, 905.8),
@@ -512,7 +513,7 @@ if placeId == 4442272183 then
 elseif placeId == 7449423635 then
 	bloxFruitsMode = true
 	sea = "3rd"
-	showNotification("Success!\nBlox Fruits Mode ON(3rd)", Color3.fromRGB(255, 255, 255))
+	showNotification("Success!\nBlox Fruits Mode ON(3rd)","成功しました！\nブロックスフルーツモード(サード)", Color3.fromRGB(255, 255, 255))
 	islands = {
 		Vector3.new(-12471, 374, -7554),
 		Vector3.new(5659, 1013, -341),
@@ -667,7 +668,8 @@ local function createInputBox(parent, text, defaultText, callback)
 	end)
 	return frame
 end
-local refreshButton =createButton(buttonScroll,"Refresh").MouseButton1Click:Connect(function()
+local refreshButton =createButton(buttonScroll,"Refresh")
+refreshButton.MouseButton1Click:Connect(function()
 	updatePlayerList()
 end)
 local function getNearestVehicleSeat()
@@ -935,7 +937,7 @@ end)
 local randomModeSwitch =createSwitch(buttonScroll, "Random Type (Full/Near)", true, function(state)
 	randomTypeNear = state
 end)
-local tracerespSwitch =createSwitch(buttonScroll, "Wall Check", false, function(state)
+local wallCheckSwitch =createSwitch(buttonScroll, "Wall Check", false, function(state)
 	wallCheck = state
 end)
 local function setHitbox()
@@ -1026,7 +1028,7 @@ local removeLavaSwitch = createSwitch(bloxfruitsRightScroll, "Remove Lava", fals
 				for _, obj in ipairs(area:GetDescendants()) do
 					if obj.Name == "LavaParts" then
 						obj:Destroy()
-						showNotification("Success!\nRemoved lava", Color3.fromRGB(255, 255, 255))
+						showNotification("Success!\nRemoved lava","成功しました！\nマグマを削除しました", Color3.fromRGB(255, 255, 255))
 						foundLava = true
 					end
 				end
@@ -1034,16 +1036,18 @@ local removeLavaSwitch = createSwitch(bloxfruitsRightScroll, "Remove Lava", fals
 		end
 
 		if foundLava then
-			showNotification("Success!\nRemoved lava", Color3.fromRGB(255, 255, 255))
+			showNotification("Success!\nRemoved lava","成功しました！\nマグマを削除しました", Color3.fromRGB(255, 255, 255))
 		else
-			showNotification("Oops!\nLava not found", Color3.fromRGB(255, 255, 255))
+			showNotification("Success!\nRemoved lava","失敗しました...\nマグマが見つかりませんでした", Color3.fromRGB(255, 255, 255))
 		end
 	end
 end)
-local flyguiButton =createButton(otherLeftScroll,"Fly Gui").MouseButton1Click:Connect(function()
+local flyguiButton =createButton(otherLeftScroll,"Fly Gui")
+flyguiButton.MouseButton1Click:Connect(function()
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/iruka-kamone/iruka_hub/refs/heads/main/mendako"))()
 end)
-local FPSBoostButton =createButton(otherLeftScroll,"FPS Boost").MouseButton1Click:Connect(function()
+local FPSBoostButton =createButton(otherLeftScroll,"FPS Boost")
+FPSBoostButton.MouseButton1Click:Connect(function()
 	local decalsyeeted = true
 	local g = game
 	local w = g.Workspace
@@ -1165,7 +1169,8 @@ elseif bloxFruitsMode and sea =="3rd" then
 	createDraggableButton("Mansion", "🏨", UDim2.new(0, 10, 0, 10), pos1)
 	createDraggableButton("Tiki", "⚓", UDim2.new(0, 120, 0, 10), pos2)
 end
-local changeTeamButton =createButton(bloxfruitsLeftScroll,"Change Team").MouseButton1Click:Connect(function()
+local changeTeamButton =createButton(bloxfruitsLeftScroll,"Change Team")
+changeTeamButton.MouseButton1Click:Connect(function()
 	if player.Team == "Pirates" then
 		game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("SetTeam", "Marines")
 	else
@@ -1214,7 +1219,8 @@ spawn(function()
 		end
 	end
 end)
---[[pcall(function()
+
+pcall(function()
 	spawn(function()
 		local gg = getrawmetatable(game)
 		local old = gg.__namecall
@@ -1239,7 +1245,7 @@ end)
 			return old(...)
 		end)
 	end)
-end)--]]
+end)
 
 local function IsEntityAlive(entity)
 	if not entity then return false end
@@ -1447,9 +1453,11 @@ fixCameraShakeButton.MouseButton1Click:Connect(function()
 end)
 
 if not bloxFruitsMode then
-
-	local bloxfruitsGui ={takeShip,removeLavaSwitch,tpSwitch,aimbotSwitch,fightingShopButton,killAuraButton,fastAttackSwitch,superRangeSwitch,fixCameraShakeButton}
-
+	
+	local bloxfruitsGui ={takeShip,removeLavaSwitch,tpSwitch,aimbotSwitch,fightingShopButton,killAuraButton,fastAttackSwitch,superRangeSwitch,fixCameraShakeButton,
+		changeTeamButton,walkWaterSwitch
+	}
+	
 	for i,switch in ipairs(bloxfruitsGui) do
 		if switch:FindFirstChild("SwitchBase") then
 			switch.SwitchBase.Visible =false
@@ -1465,7 +1473,7 @@ if not bloxFruitsMode then
 		end
 	end
 end
--- 🟢 Look Part ドロップダウン
+
 local lookParts = {"Head", "Torso","Legs"}
 local currentLookPart = "Head"
 
@@ -1497,14 +1505,12 @@ lookDropdownFrame.InputBegan:Connect(function(input)
 	end
 end)
 
--- スクロール範囲自動調整
 buttonLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 	buttonScroll.CanvasSize = UDim2.new(0, 0, 0, buttonLayout.AbsoluteContentSize.Y + 20)
 end)
 
 buttonScroll.CanvasSize = UDim2.new(0, 0, 0, buttonLayout.AbsoluteContentSize.Y + 40)
 
--- Raycast でターゲットとの間に壁があるかチェック
 local function isVisible(target)
 	if not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then
 		return false
@@ -1534,13 +1540,11 @@ local function isVisible(target)
 
 	local result = workspace:Raycast(origin, direction, raycastParams)
 	if result then
-		-- 途中で遮蔽物に当たった
 		return false
 	end
 	return true
 end
 
--- Pick random target based on settings
 local function pickRandomTarget()
 	local candidates = {}
 	for _, plr in ipairs(Players:GetPlayers()) do
@@ -1757,4 +1761,67 @@ RunService.Heartbeat:Connect(function()
 		destroyFollowPlatform()
 		lastDistance = nil
 	end
+end)
+
+local changeLanguageSwitch
+changeLanguageSwitch = createSwitch(configRightScroll, "Change Language(En/Jp)", false, function(state)
+	Japanese = state
+	homeButton.Text = Japanese and "メイン" or "Home"
+	espButton.Text = Japanese and "ESP" or "ESP"
+	otherButton.Text = Japanese and "その他" or "Other"
+	bloxfruitsButton.Text = Japanese and "BL" or "BF"
+	configButton.Text = Japanese and "設定" or "Config"
+	dropdown.Text = Japanese and "ターゲット選択" or "Select Player"
+	refreshButton.Text = Japanese and "プレイヤー更新" or "Refresh"
+	takeShip.Text = Japanese and "船に連れていく" or "Take Ship"
+	flyguiButton.Text = Japanese and "飛行ボタン" or "Fly Gui"
+	FPSBoostButton.Text = Japanese and "軽量化" or "FPS Boost"
+	changeTeamButton.Text = Japanese and "チーム変更" or "Change Team"
+	fightingShopButton.Text = Japanese and "格闘ショップ" or "Fightings Shop Gui"
+	killAuraButton.Text = Japanese and "レイド自動" or "Raid Kill Aura Gui"
+	fixCameraShakeButton.Text = Japanese and "カメラの揺れ無効" or "Fix CameraShake"
+	speedLabel.Text = Japanese and "スピード:" or "Speed:"
+	hitboxSizeInput.TextLabel.Text = Japanese and "ヒットボックスサイズ" or "Hitbox Size"
+	speedHackInput.TextLabel.Text = Japanese and "スピード" or "Speed Value"
+	jumpHackInput.TextLabel.Text = Japanese and "ジャンプ力" or "Jump Value"
+	nameespSwitch.TextLabel.Text = Japanese and "名前ESP" or "Name ESP"
+	box1espSwitch.TextLabel.Text = Japanese and "ボックスESPV1" or "Box ESP V1"
+	box2espSwitch.TextLabel.Text = Japanese and "ボックスESPV2" or "Box ESP V2"
+	tracerespSwitch.TextLabel.Text = Japanese and "トラッカーESP" or "Tracer ESP"
+	movingSwitch.TextLabel.Text = Japanese and "追尾" or "Move to Target"
+	moveModeSwitch.TextLabel.Text = Japanese and "追尾モード(テレポート/Tweem)" or "Tween Mode (TP/Tween)"
+	camLockSwitch.TextLabel.Text = Japanese and "カメラロック" or "Cam Lock"
+	viewSwitch.TextLabel.Text = Japanese and "観戦" or "Player View"
+	randomSwitch.TextLabel.Text = Japanese and "ランダムターゲット" or "Random Target"
+	teamSwitch.TextLabel.Text = Japanese and "チーム確認" or "Team Check"
+	randomModeSwitch.TextLabel.Text = Japanese and "ランダムモード(サーバー/近い順)" or "Random Type (Full/Near)"
+	wallCheckSwitch.TextLabel.Text = Japanese and "壁確認" or "Wall Check"
+	setHitboxSwitch.TextLabel.Text = Japanese and "ヒットボックス有効化" or "Hitbox Enabled"
+	hitboxVisibleSwitch.TextLabel.Text = Japanese and "ヒットボックス表示" or "Hitbox Visible"
+	removeAnimationSwitch.TextLabel.Text = Japanese and "アニメーション無効" or "Remove Animation"
+	noClipSwitch.TextLabel.Text = Japanese and "壁抜け" or "NoClip"
+	removeLavaSwitch.TextLabel.Text = Japanese and "マグマ無効" or "Remove Lava"
+	tpSwitch.TextLabel.Text = Japanese and "テレポートボタン" or "TP Gui"
+	aimbotSwitch.TextLabel.Text = Japanese and "オートエイム有効化" or "Aimbot Enabled"
+	fastAttackSwitch.TextLabel.Text = Japanese and "ファストアタック" or "Fast Attack"
+	superRangeSwitch.TextLabel.Text = Japanese and "殴り範囲超拡大(大仏のみ)" or "Super Range(Buddha Only)"
+	speedHackSwitch.TextLabel.Text = Japanese and "スピード変更" or "Speed Hack"
+	jumpHackSwitch.TextLabel.Text = Japanese and "ジャンプパワー変更" or "Jump Hack"
+	statsSwitch.TextLabel.Text = Japanese and "ステータス表示" or "Stats Gui"
+	changeLanguageSwitch.TextLabel.Text = Japanese and "英語に変更" or "Change To Japanese"
+	if not bloxFruitsMode then
+
+		local bloxfruitsGui ={takeShip,removeLavaSwitch,tpSwitch,aimbotSwitch,fightingShopButton,killAuraButton,fastAttackSwitch,superRangeSwitch,fixCameraShakeButton,
+			changeTeamButton,walkWaterSwitch
+		}
+
+		for i,switch in ipairs(bloxfruitsGui) do
+			if switch:FindFirstChild("SwitchBase") then
+				switch.TextLabel.Text =Japanese and "ブロックスフルーツ限定" or "Bloxfruits only"
+			else 
+				switch.Text = Japanese and "ブロックスフルーツ限定" or "Bloxfruits only"
+			end
+		end
+	end
+
 end)
