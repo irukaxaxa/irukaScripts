@@ -1,9 +1,141 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 local PlaceId =game.PlaceId
+
+local FILE_PATH = "BloxFruits/BountyTracker.json"
+local trackerData = {}
+local bountyData = {
+	initialBounty = 0,
+	lastSaved = 0
+}
+
+player:WaitForChild("DataLoaded", 30)
+
+local function loadTracker()
+	local success, result = pcall(function()
+		if isfile and isfile(FILE_PATH) then
+			return HttpService:JSONDecode(readfile(FILE_PATH))
+		end
+	end)
+	if success and result and result.initialBounty then
+		trackerData = result
+	else
+		local bounty = player:WaitForChild("leaderstats", 10):WaitForChild("Bounty/Honor", 10)
+		trackerData.initialBounty = bounty and bounty.Value or 0
+		trackerData.startTime = tick()
+		saveTracker()
+	end
+end
+
+local function saveTracker()
+	pcall(function()
+		if writefile then
+			writefile(FILE_PATH, HttpService:JSONEncode(trackerData))
+		end
+	end)
+end
+
+local function getCurrentBounty()
+	local bounty = player:WaitForChild("leaderstats") and player.leaderstats:FindFirstChild("Bounty/Honor")
+	return bounty and bounty.Value or trackerData.initialBounty
+end
+
+local function getBountyIncrease()
+	return getCurrentBounty() - trackerData.initialBounty
+end
+
+local function getElapsedTime()
+	local elapsed = tick() - trackerData.startTime
+	local minutes = math.floor(elapsed / 60)
+	local seconds = math.floor(elapsed % 60)
+	return string.format("%02d:%02d", minutes, seconds)
+end
+
+local function resetTracker()
+	trackerData.initialBounty = getCurrentBounty()
+	trackerData.startTime = tick()
+	trackerData.sessionKills = 0
+	saveTracker()
+end
+
+loadTracker()
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "BountyTrackerGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 280, 0, 140)
+frame.Position = UDim2.new(0, 10, 0, 10)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 2
+frame.BorderColor3 = Color3.fromRGB(100, 100, 255)
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "賞金トラッカー"
+title.TextColor3 = Color3.fromRGB(100, 200, 255)
+title.Font = Enum.Font.GothamBold
+title.TextScaled = true
+title.Parent = frame
+
+local bountyLabel = Instance.new("TextLabel")
+bountyLabel.Name = "BountyLabel"
+bountyLabel.Size = UDim2.new(1, -10, 0, 30)
+bountyLabel.Position = UDim2.new(0, 5, 0, 35)
+bountyLabel.BackgroundTransparency = 1
+bountyLabel.Text = "増加: 計算中..."
+bountyLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+bountyLabel.Font = Enum.Font.Gotham
+bountyLabel.TextXAlignment = Enum.TextXAlignment.Left
+bountyLabel.Parent = frame
+
+local timeLabel = Instance.new("TextLabel")
+timeLabel.Name = "TimeLabel"
+timeLabel.Size = UDim2.new(1, -10, 0, 30)
+timeLabel.Position = UDim2.new(0, 5, 0, 65)
+timeLabel.BackgroundTransparency = 1
+timeLabel.Text = "時間: 00:00"
+timeLabel.TextColor3 = Color3.fromRGB(255, 255, 100)
+timeLabel.Font = Enum.Font.Gotham
+timeLabel.TextXAlignment = Enum.TextXAlignment.Left
+timeLabel.Parent = frame
+
+local resetButton = Instance.new("TextButton")
+resetButton.Size = UDim2.new(0, 80, 0, 30)
+resetButton.Position = UDim2.new(1, -90, 1, -35)
+resetButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+resetButton.Text = "リセット"
+resetButton.TextColor3 = Color3.new(1, 1, 1)
+resetButton.Font = Enum.Font.GothamBold
+resetButton.Parent = frame
+
+resetButton.MouseButton1Click:Connect(function()
+	resetTracker()
+end)
+
+RunService.Heartbeat:Connect(function()
+	local inc = getBountyIncrease()
+	bountyLabel.Text = "増加: +" .. inc .. " Bounty"
+	if inc > 0 then
+		bountyLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+	elseif inc < 0 then
+		bountyLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+	else
+		bountyLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	end
+
+	timeLabel.Text = "時間: " .. getElapsedTime()
+end)
 
 if not player.Character then
 	ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam", getgenv().Setting.Team)
@@ -34,11 +166,9 @@ local function isInSafeZone(plr)
 	if not safeZones then return false end
 
 	for _, zone in ipairs(safeZones:GetChildren()) do
-		if zone:IsA("BasePart") then
-			local distance = (root.Position - zone.Position).Magnitude
-			if distance <= zone.Size.X / 2 then 
-				return true
-			end
+		local distance = (root.Position - zone.Position).Magnitude
+		if distance <= zone.Size.X / 2 then 
+			return true
 		end
 	end
 	return false
@@ -105,6 +235,7 @@ RunService.Heartbeat:Connect(function()
 	
 	if currentTarget then
 		if not isTargetAlive(currentTarget) then
+			addToBlacklist(currentTarget)
 			currentTarget = nil
 			targetStartTime = 0
 		elseif now - targetStartTime >= TARGET_TIMEOUT then
@@ -135,6 +266,21 @@ RunService.Heartbeat:Connect(function()
 	end
 end)
 
+local START_TIME = tick() 
+local HOP_AFTER_MINUTES = 5 
+
+spawn(function()
+	while task.wait(1)  do
+		local elapsed = tick() - START_TIME
+		if elapsed >= HOP_AFTER_MINUTES * 60 then
+			pcall(function()
+				game:GetService("TeleportService"):Teleport(PlaceId, player)
+			end)
+			break  
+		end 
+	end
+end)
+
 function EquipTool(Tool)
 	pcall(function()
 		game.Players.LocalPlayer.Character.Humanoid:EquipTool(game.Players.LocalPlayer.Backpack[Tool])
@@ -147,9 +293,7 @@ spawn(function()
 		for i ,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
 			if v.ToolTip == SelectWeapon then
 				SelectWeapon = v.Name
-				if not game:GetService("Players").LocalPlayer.Character:FindFirstChild(SelectWeapon) then
-					EquipTool(SelectWeapon)
-				end
+				EquipTool(SelectWeapon)
 			end
 		end
 	end
