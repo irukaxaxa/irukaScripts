@@ -23,10 +23,21 @@ local function saveTracker()
 end
 
 local function loadTracker()
-	local bounty = player:WaitForChild("leaderstats", 10):WaitForChild("Bounty/Honor", 10)
-	trackerData.initialBounty = bounty and bounty.Value or 0
-	trackerData.startTime = tick()
-	saveTracker()
+	local success, result = pcall(function()
+		if isfile and isfile(FILE_PATH) then
+			return HttpService:JSONDecode(readfile(FILE_PATH))
+		end
+	end)
+
+	if success and result and result.initialBounty and result.startTime then
+		trackerData.initialBounty = result.initialBounty
+		trackerData.startTime = result.startTime
+	else
+		local bounty = player:WaitForChild("leaderstats", 10):WaitForChild("Bounty/Honor", 10)
+		trackerData.initialBounty = bounty and bounty.Value or 0
+		trackerData.startTime = tick()
+		saveTracker()
+	end
 end
 
 local function getCurrentBounty()
@@ -286,6 +297,16 @@ spawn(function()
 				EquipTool(SelectWeapon)
 			end
 		end
+	end
+end)
+
+player.CharacterAdded:Connect(function(char)
+	char:WaitForChild("Humanoid")
+	task.wait(1)
+
+	local tool = player.Backpack:FindFirstChild(SelectWeapon)
+	if tool then
+		char.Humanoid:EquipTool(tool)
 	end
 end)
 
