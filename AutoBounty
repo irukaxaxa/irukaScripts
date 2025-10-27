@@ -45,7 +45,7 @@ local function isInSafeZone(plr)
 end
 
 local targetStartTime = 0
-local TARGET_TIMEOUT = 10
+local TARGET_TIMEOUT = 25
 local blacklist = {}
 
 local function isInBlacklist(plr)
