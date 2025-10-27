@@ -8,10 +8,6 @@ local PlaceId =game.PlaceId
 
 local FILE_PATH = "BloxFruits/BountyTracker.json"
 local trackerData = {}
-local bountyData = {
-	initialBounty = 0,
-	lastSaved = 0
-}
 
 player:WaitForChild("DataLoaded", 30)
 
@@ -23,25 +19,15 @@ local function saveTracker()
 	end)
 end
 
-
 local function loadTracker()
-	local success, result = pcall(function()
-		if isfile and isfile(FILE_PATH) then
-			return HttpService:JSONDecode(readfile(FILE_PATH))
-		end
-	end)
-	if success and result and result.initialBounty then
-		trackerData = result
-	else
-		local bounty = player:WaitForChild("leaderstats", 10):WaitForChild("Bounty/Honor", 10)
-		trackerData.initialBounty = bounty and bounty.Value or 0
-		trackerData.startTime = tick()
-		saveTracker()
-	end
+	local bounty = player:WaitForChild("leaderstats", 10):WaitForChild("Bounty/Honor", 10)
+	trackerData.initialBounty = bounty and bounty.Value or 0
+	trackerData.startTime = tick()
+	saveTracker()
 end
 
 local function getCurrentBounty()
-	local bounty = player:WaitForChild("leaderstats") and player.leaderstats:FindFirstChild("Bounty/Honor")
+	local bounty = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Bounty/Honor")
 	return bounty and bounty.Value or trackerData.initialBounty
 end
 
@@ -57,9 +43,9 @@ local function getElapsedTime()
 end
 
 local function resetTracker()
-	trackerData.initialBounty = getCurrentBounty()
+	local bounty = player:WaitForChild("leaderstats", 10):WaitForChild("Bounty/Honor", 10)
+	trackerData.initialBounty = bounty and bounty.Value or 0
 	trackerData.startTime = tick()
-	trackerData.sessionKills = 0
 	saveTracker()
 end
 
