@@ -6,13 +6,56 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local PlaceId =game.PlaceId
 
+player:WaitForChild("DataLoaded", 30)
+
+local BLACKLISTED_SERVER_FILE = "BloxFruits/BlacklistedServer.json"
+local blacklistedServer = nil
+
+local function getCurrentServerId()
+	return game.JobId
+end
+
+local function addToServerBlacklist(serverId)
+	pcall(function()
+		if writefile then
+			writefile(BLACKLISTED_SERVER_FILE, HttpService:JSONEncode({serverId = serverId}))
+		end
+	end)
+end
+
+local function loadServerBlacklist()
+	local success, result = pcall(function()
+		if isfile and isfile(BLACKLISTED_SERVER_FILE) then
+			return HttpService:JSONDecode(readfile(BLACKLISTED_SERVER_FILE))
+		end
+	end)
+	if success and result and result.serverId then
+		blacklistedServer = result.serverId
+	end
+end
+
+local function safeTeleport()
+	local currentServer = getCurrentServerId()
+	addToServerBlacklist(currentServer)
+	loadServerBlacklist()
+
+	pcall(function()
+		game:GetService("TeleportService"):Teleport(PlaceId, player)
+	end)
+end
+
+pcall(function()
+	if delfile and isfile(BLACKLISTED_SERVER_FILE) then
+		delfile(BLACKLISTED_SERVER_FILE)
+	end
+end)
+blacklistedServer = nil
+
 local FILE_PATH = "BloxFruits/BountyTracker.json"
 local trackerData = {
 	initialBounty = 0,
 	startTime = 0
 }
-
-player:WaitForChild("DataLoaded", 30)
 
 local function saveTracker()
 	pcall(function()
@@ -149,7 +192,7 @@ local function checkPvpAndHop()
 	print(pvp)
 	if pvp == true then
 		pcall(function()
-			game:GetService("TeleportService"):Teleport(PlaceId, player)
+			safeTeleport()
 		end)
 	end
 end
@@ -253,7 +296,7 @@ RunService.Heartbeat:Connect(function()
 		else
 			if not isInCombat() then
 				pcall(function()
-					game:GetService("TeleportService"):Teleport(PlaceId, player)
+					safeTeleport()
 				end)
 			end
 			return
@@ -275,7 +318,7 @@ spawn(function()
 		local elapsed = tick() - START_TIME
 		if elapsed >= HOP_AFTER_MINUTES * 60 then
 			pcall(function()
-				game:GetService("TeleportService"):Teleport(PlaceId, player)
+				safeTeleport()
 			end)
 			break  
 		end 
