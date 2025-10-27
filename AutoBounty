@@ -21,9 +21,7 @@ local function checkPvpAndHop()
 	end
 end
 
-pcall(function()
-	player.CharacterAdded:Connect(checkPvpAndHop)
-end)
+player.CharacterAdded:Connect(checkPvpAndHop)
 
 local currentTarget = nil
 
@@ -36,7 +34,7 @@ local function isInSafeZone(plr)
 	if not safeZones then return false end
 
 	for _, zone in ipairs(safeZones:GetChildren()) do
-		if zone:IsA("BasePart") and zone.Shape == Enum.PartType.Ball then
+		if zone:IsA("BasePart") then
 			local distance = (root.Position - zone.Position).Magnitude
 			if distance <= zone.Size.X / 2 then 
 				return true
@@ -48,6 +46,15 @@ end
 
 local targetStartTime = 0
 local TARGET_TIMEOUT = 10
+local blacklist = {}
+
+local function isInBlacklist(plr)
+	return blacklist[plr] == true
+end
+
+local function addToBlacklist(plr)
+	blacklist[plr] = true
+end
 
 local function findNewTarget()
 	local myLevel = player:FindFirstChild("Data") and player.Data:FindFirstChild("Level")
@@ -63,7 +70,9 @@ local function findNewTarget()
 				if hum.Health > 0 then return plr end
 				continue
 			end
-
+			
+			if isInBlacklist(plr) then continue end
+			
 			if (pvp == nil or pvp == false) and targetLevel and not isInSafeZone(plr) then
 				local diff = math.abs(myLevel.Value - targetLevel.Value)
 				if diff <= myLevel.Value * 0.25 then
@@ -79,12 +88,30 @@ local function isTargetAlive(target)
 	return target.Character and target.Character:FindFirstChild("Humanoid") and target.Character.Humanoid.Health > 0
 end
 
+local function isInCombat()
+	local gui = player:FindFirstChild("PlayerGui")
+	if not gui then return false end
+	local main = gui:FindFirstChild("Main")
+	if not main then return false end
+	local hud = main:FindFirstChild("BottomHUDList")
+	if not hud then return false end
+	local combat = hud:FindFirstChild("InCombatBottom")
+	if not combat then return false end
+	return combat.Value == true
+end
+
 RunService.Heartbeat:Connect(function()
 	local now = tick()
-
-	if currentTarget and (not isTargetAlive(currentTarget) or (now - targetStartTime >= TARGET_TIMEOUT)) then
-		currentTarget = nil
-		targetStartTime = 0
+	
+	if currentTarget then
+		if not isTargetAlive(currentTarget) then
+			currentTarget = nil
+			targetStartTime = 0
+		elseif now - targetStartTime >= TARGET_TIMEOUT then
+			addToBlacklist(currentTarget)
+			currentTarget = nil
+			targetStartTime = 0
+		end
 	end
 
 	if not currentTarget then
@@ -92,9 +119,11 @@ RunService.Heartbeat:Connect(function()
 		if currentTarget then
 			targetStartTime = now
 		else
-			pcall(function()
-				game:GetService("TeleportService"):Teleport(PlaceId, player)
-			end)
+			if not isInCombat() then
+				pcall(function()
+					game:GetService("TeleportService"):Teleport(PlaceId, player)
+				end)
+			end
 			return
 		end
 	end
@@ -258,3 +287,11 @@ end
 
 if player.Character then setupSitPrevention(player.Character) end
 player.CharacterAdded:Connect(setupSitPrevention)
+
+spawn(function()
+	while task.wait(1) do
+		if not game.Players.LocalPlayer.Character:FindFirstChild("HasBuso") then
+			game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
+		end
+	end
+end)
