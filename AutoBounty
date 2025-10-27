@@ -11,7 +11,9 @@ if not player.Character then
 end
 
 local function checkPvpAndHop()	
+	print("死んじゃったー")
 	local pvp = player:GetAttribute("PvpDisabled")
+	print(pvp)
 	if pvp == true then
 		pcall(function()
 			game:GetService("TeleportService"):Teleport(PlaceId, player)
@@ -36,7 +38,7 @@ local function isInSafeZone(plr)
 	for _, zone in ipairs(safeZones:GetChildren()) do
 		if zone:IsA("BasePart") and zone.Shape == Enum.PartType.Ball then
 			local distance = (root.Position - zone.Position).Magnitude
-			if distance <= zone.Size.X / 2 then  -- 球体の半径
+			if distance <= zone.Size.X / 2 then 
 				return true
 			end
 		end
@@ -44,31 +46,27 @@ local function isInSafeZone(plr)
 	return false
 end
 
+local targetStartTime = 0
+local TARGET_TIMEOUT = 10
+
 local function findNewTarget()
 	local myLevel = player:FindFirstChild("Data") and player.Data:FindFirstChild("Level")
 	if not myLevel then return nil end
 
 	for _, plr in pairs(Players:GetPlayers()) do
 		if plr ~= player and plr.Character and plr.Character:FindFirstChild("Humanoid") then
-			local humanoid = plr.Character.Humanoid
+			local hum = plr.Character.Humanoid
 			local pvp = plr:GetAttribute("PvpDisabled")
 			local targetLevel = plr:FindFirstChild("Data") and plr.Data:FindFirstChild("Level")
 
 			if plr == currentTarget then
-				if humanoid.Health > 0 then
-					return plr 
-				else
-					continue
-				end
+				if hum.Health > 0 then return plr end
+				continue
 			end
 
 			if (pvp == nil or pvp == false) and targetLevel and not isInSafeZone(plr) then
-				local myLv = myLevel.Value
-				local tLv = targetLevel.Value
-				local diff = math.abs(myLv - tLv)
-				local threshold = myLv * 0.25
-
-				if diff <= threshold then
+				local diff = math.abs(myLevel.Value - targetLevel.Value)
+				if diff <= myLevel.Value * 0.25 then
 					return plr
 				end
 			end
@@ -78,19 +76,33 @@ local function findNewTarget()
 end
 
 local function isTargetAlive(target)
-	if not target.Character or not target.Character:FindFirstChild("Humanoid") then return false end
-	if target.Character.Humanoid.Health <= 0 then return false end
-	return true
+	return target.Character and target.Character:FindFirstChild("Humanoid") and target.Character.Humanoid.Health > 0
 end
 
-RunService.Heartbeat:Connect(function(dt)
-	if not currentTarget or not isTargetAlive(currentTarget) then
+RunService.Heartbeat:Connect(function()
+	local now = tick()
+
+	if currentTarget and (not isTargetAlive(currentTarget) or (now - targetStartTime >= TARGET_TIMEOUT)) then
+		currentTarget = nil
+		targetStartTime = 0
+	end
+
+	if not currentTarget then
 		currentTarget = findNewTarget()
-	else
-		local myChar = player.Character
-		if myChar and myChar:FindFirstChild("HumanoidRootPart") and currentTarget.Character and currentTarget.Character:FindFirstChild("HumanoidRootPart") then
-			myChar.HumanoidRootPart.CFrame = currentTarget.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+		if currentTarget then
+			targetStartTime = now
+		else
+			pcall(function()
+				game:GetService("TeleportService"):Teleport(PlaceId, player)
+			end)
+			return
 		end
+	end
+
+	local myChar = player.Character
+	local targetChar = currentTarget.Character
+	if myChar and myChar:FindFirstChild("HumanoidRootPart") and targetChar and targetChar:FindFirstChild("HumanoidRootPart") then
+		myChar.HumanoidRootPart.CFrame = targetChar.HumanoidRootPart.CFrame + Vector3.new(0, -0.5, 0)
 	end
 end)
 
