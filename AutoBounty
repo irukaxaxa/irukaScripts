@@ -7,7 +7,10 @@ local player = Players.LocalPlayer
 local PlaceId =game.PlaceId
 
 local FILE_PATH = "BloxFruits/BountyTracker.json"
-local trackerData = {}
+local trackerData = {
+	initialBounty = 0,
+	startTime = 0
+}
 
 player:WaitForChild("DataLoaded", 30)
 
@@ -162,7 +165,7 @@ local function isInSafeZone(plr)
 end
 
 local targetStartTime = 0
-local TARGET_TIMEOUT = 25
+local TARGET_TIMEOUT = 35
 local blacklist = {}
 
 local function isInBlacklist(plr)
