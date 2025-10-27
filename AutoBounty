@@ -97,7 +97,7 @@ local function isInCombat()
 	if not hud then return false end
 	local combat = hud:FindFirstChild("InCombatBottom")
 	if not combat then return false end
-	return combat.Value == true
+	return combat.Visible == true
 end
 
 RunService.Heartbeat:Connect(function()
