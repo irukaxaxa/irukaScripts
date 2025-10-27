@@ -15,6 +15,15 @@ local bountyData = {
 
 player:WaitForChild("DataLoaded", 30)
 
+local function saveTracker()
+	pcall(function()
+		if writefile then
+			writefile(FILE_PATH, HttpService:JSONEncode(trackerData))
+		end
+	end)
+end
+
+
 local function loadTracker()
 	local success, result = pcall(function()
 		if isfile and isfile(FILE_PATH) then
@@ -29,14 +38,6 @@ local function loadTracker()
 		trackerData.startTime = tick()
 		saveTracker()
 	end
-end
-
-local function saveTracker()
-	pcall(function()
-		if writefile then
-			writefile(FILE_PATH, HttpService:JSONEncode(trackerData))
-		end
-	end)
 end
 
 local function getCurrentBounty()
