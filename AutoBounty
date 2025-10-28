@@ -8,50 +8,35 @@ local PlaceId =game.PlaceId
 
 player:WaitForChild("DataLoaded", 30)
 
-local BLACKLISTED_SERVER_FILE = "BloxFruits/BlacklistedServer.json"
-local blacklistedServer = nil
-
-local function getCurrentServerId()
-	return game.JobId
-end
-
-local function addToServerBlacklist(serverId)
+local function safeTeleport()
 	pcall(function()
 		if writefile then
-			writefile(BLACKLISTED_SERVER_FILE, HttpService:JSONEncode({serverId = serverId}))
+			writefile("BloxFruits/BlacklistedServer.json", HttpService:JSONEncode({serverId = game.JobId}))
 		end
 	end)
+	game:GetService("TeleportService"):Teleport(PlaceId, player)
 end
 
-local function loadServerBlacklist()
-	local success, result = pcall(function()
-		if isfile and isfile(BLACKLISTED_SERVER_FILE) then
-			return HttpService:JSONDecode(readfile(BLACKLISTED_SERVER_FILE))
-		end
-	end)
-	if success and result and result.serverId then
-		blacklistedServer = result.serverId
-	end
-end
-
-local function safeTeleport()
-	local currentServer = getCurrentServerId()
-	addToServerBlacklist(currentServer)
-	loadServerBlacklist()
-
-	pcall(function()
-		game:GetService("TeleportService"):Teleport(PlaceId, player)
-	end)
-end
-
-pcall(function()
-	if delfile and isfile(BLACKLISTED_SERVER_FILE) then
-		delfile(BLACKLISTED_SERVER_FILE)
+local success, result = pcall(function()
+	if isfile and isfile("BloxFruits/BlacklistedServer.json") then
+		return HttpService:JSONDecode(readfile("BloxFruits/BlacklistedServer.json"))
 	end
 end)
-blacklistedServer = nil
 
-local FILE_PATH = "BloxFruits/BountyTracker.json"
+local currentServer = game.JobId
+
+if success and result and result.serverId == currentServer then
+	pcall(function()
+		safeTeleport()
+	end)
+else
+	pcall(function()
+		if writefile then
+			writefile("BloxFruits/BlacklistedServer.json", HttpService:JSONEncode({serverId = currentServer}))
+		end
+	end)
+end
+
 local trackerData = {
 	initialBounty = 0,
 	startTime = 0
@@ -60,15 +45,15 @@ local trackerData = {
 local function saveTracker()
 	pcall(function()
 		if writefile then
-			writefile(FILE_PATH, HttpService:JSONEncode(trackerData))
+			writefile("BloxFruits/BountyTracker.json", HttpService:JSONEncode(trackerData))
 		end
 	end)
 end
 
 local function loadTracker()
 	local success, result = pcall(function()
-		if isfile and isfile(FILE_PATH) then
-			return HttpService:JSONDecode(readfile(FILE_PATH))
+		if isfile and isfile("BloxFruits/BountyTracker.json") then
+			return HttpService:JSONDecode(readfile("BloxFruits/BountyTracker.json"))
 		end
 	end)
 
@@ -113,72 +98,100 @@ screenGui.Name = "BountyTrackerGUI"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 280, 0, 140)
-frame.Position = UDim2.new(0, 10, 0, 10)
+local frame = Instance.new("ImageLabel")
+frame.Size = UDim2.new(0.6, 0, 0.8, 0)
+frame.Position = UDim2.new(0.2, 0, 0.1, 0)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 2
-frame.BorderColor3 = Color3.fromRGB(100, 100, 255)
+frame.Image = "rbxassetid://76779713443091"
 frame.Active = true
 frame.Draggable = true
 frame.Parent = screenGui
+local uiConner = Instance.new("UICorner", frame)
+uiConner.CornerRadius = UDim.new(0.05, 0)
+local uiStroke = Instance.new("UIStroke", frame)
+uiStroke.Color = Color3.fromRGB(255, 255, 255)
+uiStroke.Thickness = 2.5
+uiStroke.Transparency = 0
+local uiGradient = Instance.new("UIGradient", frame)
+uiGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(170, 255, 255)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(170, 255, 255))
+})
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 30)
+title.Size = UDim2.new(0.8, 0, 0.14, 0)
+title.Position = UDim2.new(0.1,0,0,0)
 title.BackgroundTransparency = 1
-title.Text = "賞金トラッカー"
-title.TextColor3 = Color3.fromRGB(100, 200, 255)
+title.TextStrokeTransparency =0
+title.Text = "Yoru Hub Auto Bounty"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
 title.TextScaled = true
 title.Parent = frame
 
 local bountyLabel = Instance.new("TextLabel")
 bountyLabel.Name = "BountyLabel"
-bountyLabel.Size = UDim2.new(1, -10, 0, 30)
-bountyLabel.Position = UDim2.new(0, 5, 0, 35)
+bountyLabel.Size = UDim2.new(0.2,0,0.2,0)
+bountyLabel.Position = UDim2.new(0.1,0,0.2,0)
 bountyLabel.BackgroundTransparency = 1
-bountyLabel.Text = "増加: 計算中..."
-bountyLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-bountyLabel.Font = Enum.Font.Gotham
+bountyLabel.TextStrokeTransparency =0.5
+bountyLabel.Text = "Bounty Earned Loading..."
+bountyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+bountyLabel.Font = Enum.Font.FredokaOne
 bountyLabel.TextXAlignment = Enum.TextXAlignment.Left
+bountyLabel.TextSize =20
 bountyLabel.Parent = frame
 
 local timeLabel = Instance.new("TextLabel")
 timeLabel.Name = "TimeLabel"
-timeLabel.Size = UDim2.new(1, -10, 0, 30)
-timeLabel.Position = UDim2.new(0, 5, 0, 65)
+timeLabel.Size = UDim2.new(0.2,0,0.2,0)
+timeLabel.Position = UDim2.new(0.1,0,0.3,0)
 timeLabel.BackgroundTransparency = 1
-timeLabel.Text = "時間: 00:00"
-timeLabel.TextColor3 = Color3.fromRGB(255, 255, 100)
-timeLabel.Font = Enum.Font.Gotham
+timeLabel.TextStrokeTransparency =0.5
+timeLabel.Text = "Time: 00:00"
+timeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+timeLabel.Font = Enum.Font.FredokaOne
 timeLabel.TextXAlignment = Enum.TextXAlignment.Left
+timeLabel.TextSize = 20
 timeLabel.Parent = frame
 
 local resetButton = Instance.new("TextButton")
-resetButton.Size = UDim2.new(0, 80, 0, 30)
-resetButton.Position = UDim2.new(1, -90, 1, -35)
-resetButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
-resetButton.Text = "リセット"
+resetButton.Size = UDim2.new(0.2, 0, 0.15, 0)
+resetButton.Position = UDim2.new(0.77, 0, 0.8, 0)
+resetButton.BackgroundColor3 = Color3.fromRGB(170, 255, 255)
+resetButton.BackgroundTransparency = 0.6
+resetButton.TextStrokeTransparency =0.5
+resetButton.BorderSizePixel = 0
+resetButton.Text = "Reset"
 resetButton.TextColor3 = Color3.new(1, 1, 1)
-resetButton.Font = Enum.Font.GothamBold
+resetButton.Font = Enum.Font.FredokaOne
+resetButton.TextSize = 26
 resetButton.Parent = frame
 
-resetButton.MouseButton1Click:Connect(function()
-	resetTracker()
-end)
+local toggleButton = Instance.new("ImageButton")
+toggleButton.Size = UDim2.new(0, 50, 0, 50)
+toggleButton.Position = UDim2.new(0, 100, 0, 100)
+toggleButton.BackgroundTransparency = 1
+toggleButton.Image = "rbxassetid://105537595237393"
+toggleButton.Parent = screenGui
+toggleButton.Active = true
+toggleButton.Draggable = true
+local toggleCorner = Instance.new("UICorner", toggleButton)
+toggleCorner.CornerRadius = UDim.new(0.5, 0)
+local uiStroke = Instance.new("UIStroke", toggleButton)
+uiStroke.Color = Color3.fromRGB(85, 170, 255)
+uiStroke.Thickness = 1.5
+uiStroke.Transparency = 0
 
+toggleButton.MouseButton1Click:Connect(function()
+	frame.Visible = not frame.Visible
+end)
 RunService.Heartbeat:Connect(function()
 	local inc = getBountyIncrease()
-	bountyLabel.Text = "増加: +" .. inc .. " Bounty"
-	if inc > 0 then
-		bountyLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-	elseif inc < 0 then
-		bountyLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-	else
-		bountyLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-	end
-
-	timeLabel.Text = "時間: " .. getElapsedTime()
+	bountyLabel.Text = "Bounty Earned: " .. inc
+	timeLabel.Text = "Time: " .. getElapsedTime()
 end)
 
 if not player.Character then
@@ -187,9 +200,7 @@ if not player.Character then
 end
 
 local function checkPvpAndHop()	
-	print("死んじゃったー")
 	local pvp = player:GetAttribute("PvpDisabled")
-	print(pvp)
 	if pvp == true then
 		pcall(function()
 			safeTeleport()
@@ -210,8 +221,11 @@ local function isInSafeZone(plr)
 	if not safeZones then return false end
 
 	for _, zone in ipairs(safeZones:GetChildren()) do
+		local mesh = zone:FindFirstChild("Mesh")
+		if not mesh then continue end
+		
 		local distance = (root.Position - zone.Position).Magnitude
-		if distance <= zone.Size.X / 2 then 
+		if distance <= (zone.Size.X * mesh.Scale.X) / 2 then 
 			return true
 		end
 	end
