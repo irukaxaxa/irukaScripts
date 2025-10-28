@@ -6,18 +6,79 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local PlaceId =game.PlaceId
 
+local teleporting = false
+
 player:WaitForChild("DataLoaded", 30)
 
 local function safeTeleport()
-	pcall(function()
+	--[[pcall(function()
 		if writefile then
 			writefile("BloxFruits/BlacklistedServer.json", HttpService:JSONEncode({serverId = game.JobId}))
 		end
-	end)
-	game:GetService("TeleportService"):Teleport(PlaceId, player)
+	end)--]]
+	local PlaceID = game.PlaceId
+	local AllIDs = {}
+	local foundAnything = ""
+	local actualHour = os.date("!*t").hour
+	local Deleted = false
+	function TPReturner()
+		local Site;
+		if foundAnything == "" then
+			Site = game.HttpService:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. PlaceID .. '/servers/Public?sortOrder=Asc&limit=100'))
+		else
+			Site = game.HttpService:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. PlaceID .. '/servers/Public?sortOrder=Asc&limit=100&cursor=' .. foundAnything))
+		end        
+		local ID = ""
+		if Site.nextPageCursor and Site.nextPageCursor ~= "null" and Site.nextPageCursor ~= nil then
+			foundAnything = Site.nextPageCursor
+		end        
+		local num = 0
+		for i,v in pairs(Site.data) do
+			local Possible = true
+			ID = tostring(v.id)            
+			if tonumber(v.maxPlayers) > tonumber(v.playing) then
+				for _,Existing in pairs(AllIDs) do
+					if num ~= 0 then
+						if ID == tostring(Existing) then
+							Possible = false
+						end
+					else
+						if tonumber(actualHour) ~= tonumber(Existing) then
+							local delFile = pcall(function()
+								AllIDs = {}
+								table.insert(AllIDs, actualHour)
+							end)
+						end
+					end
+					num = num + 1
+				end
+				if Possible == true then
+					table.insert(AllIDs, ID)
+					wait(0.1)
+					pcall(function()
+						game:GetService("TeleportService"):TeleportToPlaceInstance(PlaceID, ID, game.Players.LocalPlayer)
+					end)
+					wait(1)
+					break
+				end
+			end
+		end
+	end
+	function Teleport() 
+		while true do
+			pcall(function()
+				TPReturner()
+				if foundAnything ~= "" then
+					TPReturner()
+				end
+			end)
+			wait(2)
+		end
+	end
+	Teleport()
 end
 
-local success, result = pcall(function()
+--[[local success, result = pcall(function()
 	if isfile and isfile("BloxFruits/BlacklistedServer.json") then
 		return HttpService:JSONDecode(readfile("BloxFruits/BlacklistedServer.json"))
 	end
@@ -35,7 +96,7 @@ else
 			writefile("BloxFruits/BlacklistedServer.json", HttpService:JSONEncode({serverId = currentServer}))
 		end
 	end)
-end
+end--]]
 
 local trackerData = {
 	initialBounty = 0,
@@ -207,10 +268,9 @@ end
 
 local function checkPvpAndHop()	
 	local pvp = player:GetAttribute("PvpDisabled")
-	if pvp == true then
-		pcall(function()
-			safeTeleport()
-		end)
+	if pvp == true and not teleporting then
+		safeTeleport()
+		teleporting = true
 	end
 end
 
@@ -314,10 +374,9 @@ RunService.Heartbeat:Connect(function()
 		if currentTarget then
 			targetStartTime = now
 		else
-			if not isInCombat() then
-				pcall(function()
-					safeTeleport()
-				end)
+			if not isInCombat() and not teleporting then
+				safeTeleport()
+				teleporting = true
 			end
 			return
 		end
@@ -336,10 +395,9 @@ local HOP_AFTER_MINUTES = 5
 spawn(function()
 	while task.wait(1)  do
 		local elapsed = tick() - START_TIME
-		if elapsed >= HOP_AFTER_MINUTES * 60 then
-			pcall(function()
-				safeTeleport()
-			end)
+		if elapsed >= HOP_AFTER_MINUTES * 60 and not teleporting then
+			safeTeleport()
+			teleporting = true
 			break  
 		end 
 	end
