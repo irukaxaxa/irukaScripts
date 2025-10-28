@@ -171,6 +171,10 @@ resetButton.Font = Enum.Font.FredokaOne
 resetButton.TextSize = 26
 resetButton.Parent = frame
 
+resetButton.MouseButton1Click:Connect(function()
+	resetTracker()
+end)
+
 local toggleButton = Instance.new("ImageButton")
 toggleButton.Size = UDim2.new(0, 50, 0, 50)
 toggleButton.Position = UDim2.new(0, 100, 0, 100)
@@ -189,6 +193,7 @@ uiStroke.Transparency = 0
 toggleButton.MouseButton1Click:Connect(function()
 	frame.Visible = not frame.Visible
 end)
+
 RunService.Heartbeat:Connect(function()
 	local inc = getBountyIncrease()
 	bountyLabel.Text = "Bounty Earned: " .. inc
