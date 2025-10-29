@@ -261,11 +261,6 @@ RunService.Heartbeat:Connect(function()
 	timeLabel.Text = "Time: " .. getElapsedTime()
 end)
 
-task.spawn(function()
-	task.wait(3)
-	frame.Visible = false
-end)
-
 if not player.Character then
 	ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam", getgenv().Setting.Team)
 	player.CharacterAdded:Wait()
@@ -414,21 +409,19 @@ function EquipTool(Tool)
 	end)
 end
 
-local SelectWeapon
+local SelectWeapon = "Blox Fruit"
 spawn(function()
-	while wait(0.2) do
+	while wait() do
 		for i ,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-			if v.ToolTip == "Blox Fruit" then
+			if v.ToolTip == SelectWeapon then
 				SelectWeapon = v.Name
-				if not player.Character:FindFirstChild(SelectWeapon) then
-					EquipTool(SelectWeapon)
-				end
+				EquipTool(SelectWeapon)
 			end
 		end
 	end
 end)
 
---[[player.CharacterAdded:Connect(function(char)
+player.CharacterAdded:Connect(function(char)
 	char:WaitForChild("Humanoid")
 	task.wait(1)
 
@@ -436,7 +429,7 @@ end)
 	if tool then
 		char.Humanoid:EquipTool(tool)
 	end
-end)]]--
+end)
 
 local function IsEntityAlive(entity)
 	if not entity then return false end
