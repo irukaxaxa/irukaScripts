@@ -193,26 +193,13 @@ title.Font = Enum.Font.GothamBold
 title.TextScaled = true
 title.Parent = frame
 
-local boutyStateLabel = Instance.new("TextLabel")
-boutyStateLabel.Name = "BountyStateLabel"
-boutyStateLabel.Size = UDim2.new(0.2,0,0.2,0)
-boutyStateLabel.Position = UDim2.new(0.1,0,0.2,0)
-boutyStateLabel.BackgroundTransparency = 1
-boutyStateLabel.TextStrokeTransparency =0.5
-boutyStateLabel.Text = "Current Bounty :Loading..."
-boutyStateLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-boutyStateLabel.Font = Enum.Font.FredokaOne
-boutyStateLabel.TextXAlignment = Enum.TextXAlignment.Left
-boutyStateLabel.TextSize =20
-boutyStateLabel.Parent = frame
-
 local bountyLabel = Instance.new("TextLabel")
 bountyLabel.Name = "BountyLabel"
 bountyLabel.Size = UDim2.new(0.2,0,0.2,0)
-bountyLabel.Position = UDim2.new(0.1,0,0.3,0)
+bountyLabel.Position = UDim2.new(0.1,0,0.2,0)
 bountyLabel.BackgroundTransparency = 1
 bountyLabel.TextStrokeTransparency =0.5
-bountyLabel.Text = "Bounty Earned :Loading..."
+bountyLabel.Text = "Bounty Earned Loading..."
 bountyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 bountyLabel.Font = Enum.Font.FredokaOne
 bountyLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -222,7 +209,7 @@ bountyLabel.Parent = frame
 local timeLabel = Instance.new("TextLabel")
 timeLabel.Name = "TimeLabel"
 timeLabel.Size = UDim2.new(0.2,0,0.2,0)
-timeLabel.Position = UDim2.new(0.1,0,0.4,0)
+timeLabel.Position = UDim2.new(0.1,0,0.3,0)
 timeLabel.BackgroundTransparency = 1
 timeLabel.TextStrokeTransparency =0.5
 timeLabel.Text = "Time: 00:00"
@@ -244,31 +231,9 @@ resetButton.TextColor3 = Color3.new(1, 1, 1)
 resetButton.Font = Enum.Font.FredokaOne
 resetButton.TextSize = 26
 resetButton.Parent = frame
-local uiConner = Instance.new("UICorner", resetButton)
-uiConner.CornerRadius = UDim.new(0.3, 0)
 
 resetButton.MouseButton1Click:Connect(function()
 	resetTracker()
-end)
-
-local hopButton = Instance.new("TextButton")
-hopButton.Size = UDim2.new(0.2, 0, 0.15, 0)
-hopButton.Position = UDim2.new(0.77, 0, 0.6, 0)
-hopButton.BackgroundColor3 = Color3.fromRGB(170, 255, 255)
-hopButton.BackgroundTransparency = 0.6
-hopButton.TextStrokeTransparency =0.5
-hopButton.BorderSizePixel = 0
-hopButton.Text = "Server Hop"
-hopButton.TextColor3 = Color3.new(1, 1, 1)
-hopButton.Font = Enum.Font.FredokaOne
-hopButton.TextSize = 26
-hopButton.Parent = frame
-local uiConner = Instance.new("UICorner", hopButton)
-uiConner.CornerRadius = UDim.new(0.3, 0)
-
-hopButton.MouseButton1Click:Connect(function()
-	safeTeleport()
-	teleporting = true
 end)
 
 local toggleButton = Instance.new("ImageButton")
@@ -290,19 +255,12 @@ toggleButton.MouseButton1Click:Connect(function()
 	frame.Visible = not frame.Visible
 end)
 
-spawn(function()
-	task.wait(3)
-	frame.Visible = false
-end)
-
 RunService.Heartbeat:Connect(function()
 	local inc = getBountyIncrease()
-	local currentBounty = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Bounty/Honor")
-
-	boutyStateLabel.Text = "Current Bounty: " .. (currentBounty and currentBounty.Value or "Loading...")
 	bountyLabel.Text = "Bounty Earned: " .. inc
 	timeLabel.Text = "Time: " .. getElapsedTime()
 end)
+
 task.spawn(function()
 	task.wait(3)
 	frame.Visible = false
@@ -458,7 +416,7 @@ end
 
 local SelectWeapon
 spawn(function()
-	while wait(.2) do
+	while wait(0.2) do
 		for i ,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
 			if v.ToolTip == "Blox Fruit" then
 				SelectWeapon = v.Name
@@ -514,7 +472,7 @@ local function GetEnemiesInRange(character, range)
 	return targets
 end
 
-local attackRange = 60
+local attackRange
 local function attackNoCoolDown()
 	local character = player.Character
 	local hrp = character:FindFirstChild("HumanoidRootPart")
@@ -527,11 +485,11 @@ local function attackNoCoolDown()
 		end
 	end
 	if not equippedWeapon then return end
-	--[[if hrp:FindFirstChild("Buddha") then
+	if hrp:FindFirstChild("Buddha") then
 		attackRange =1000
 	else
 		attackRange =60
-	end]]--
+	end
 	local enemiesInRange = GetEnemiesInRange(character, attackRange)
 	if equippedWeapon:FindFirstChild("LeftClickRemote") then
 		local attackCount = 1  
@@ -610,17 +568,13 @@ local function setupSitPrevention(char)
 	end)
 end
 
+if player.Character then setupSitPrevention(player.Character) end
+player.CharacterAdded:Connect(setupSitPrevention)
+
 spawn(function()
 	while task.wait(1) do
 		if not game.Players.LocalPlayer.Character:FindFirstChild("HasBuso") then
 			game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
 		end
 	end
-end)
-
-if player.Character then
-	setupSitPrevention(player.Character)
-end
-player.CharacterAdded:Connect(function()
-	setupSitPrevention(player.Character)
 end)
