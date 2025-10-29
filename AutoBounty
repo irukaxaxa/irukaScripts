@@ -73,7 +73,7 @@ local function safeTeleport()
 					TPReturner()
 				end
 			end)
-			wait(2)
+			wait(0.5)
 		end
 	end
 	Teleport()
@@ -330,7 +330,7 @@ end
 
 local function checkPvpAndHop()	
 	local pvp = player:GetAttribute("PvpDisabled")
-	if pvp == true and not teleporting then
+	if pvp == true then
 		teleporting = true
 		safeTeleport()
 	end
@@ -437,7 +437,7 @@ RunService.Heartbeat:Connect(function()
 		if currentTarget then
 			targetStartTime = now
 		else
-			if not isInCombat() and not teleporting then
+			if not isInCombat() then
 				teleporting = true
 				safeTeleport()
 			end
@@ -460,7 +460,7 @@ local HOP_AFTER_MINUTES = 5
 spawn(function()
 	while task.wait(1)  do
 		local elapsed = tick() - START_TIME
-		if elapsed >= HOP_AFTER_MINUTES * 60 and not teleporting then
+		if elapsed >= HOP_AFTER_MINUTES * 60 then
 			teleporting = true
 			safeTeleport()
 			break  
