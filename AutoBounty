@@ -73,7 +73,7 @@ local function safeTeleport()
 					TPReturner()
 				end
 			end)
-			wait(2)
+			wait(1)
 		end
 	end
 	Teleport()
@@ -442,7 +442,7 @@ RunService.Heartbeat:Connect(function()
 			return
 		end
 	end
-	
+
 	if isEscaping then return end
 
 	local myChar = player.Character
