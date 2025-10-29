@@ -7,7 +7,6 @@ local player = Players.LocalPlayer
 local PlaceId =game.PlaceId
 
 local teleporting = false
-local isEscaping = false
 
 player:WaitForChild("DataLoaded", 30)
 
@@ -73,7 +72,7 @@ local function safeTeleport()
 					TPReturner()
 				end
 			end)
-			wait(0.5)
+			wait(2)
 		end
 	end
 	Teleport()
@@ -281,8 +280,8 @@ local uiConner = Instance.new("UICorner", hopButton)
 uiConner.CornerRadius = UDim.new(0.3, 0)
 
 hopButton.MouseButton1Click:Connect(function()
-	teleporting = true
 	safeTeleport()
+	teleporting = true
 end)
 
 local toggleButton = Instance.new("ImageButton")
@@ -330,9 +329,9 @@ end
 
 local function checkPvpAndHop()	
 	local pvp = player:GetAttribute("PvpDisabled")
-	if pvp == true then
-		teleporting = true
+	if pvp == true and not teleporting then
 		safeTeleport()
+		teleporting = true
 	end
 end
 
@@ -373,7 +372,6 @@ local function addToBlacklist(plr)
 end
 
 local function findNewTarget()
-	if isEscaping then return end
 	local myLevel = player:FindFirstChild("Data") and player.Data:FindFirstChild("Level")
 	if not myLevel then return nil end
 
@@ -437,15 +435,13 @@ RunService.Heartbeat:Connect(function()
 		if currentTarget then
 			targetStartTime = now
 		else
-			if not isInCombat() then
-				teleporting = true
+			if not isInCombat() and not teleporting then
 				safeTeleport()
+				teleporting = true
 			end
 			return
 		end
 	end
-	
-	if isEscaping then return end
 
 	local myChar = player.Character
 	local targetChar = currentTarget.Character
@@ -460,9 +456,9 @@ local HOP_AFTER_MINUTES = 5
 spawn(function()
 	while task.wait(1)  do
 		local elapsed = tick() - START_TIME
-		if elapsed >= HOP_AFTER_MINUTES * 60 then
-			teleporting = true
+		if elapsed >= HOP_AFTER_MINUTES * 60 and not teleporting then
 			safeTeleport()
+			teleporting = true
 			break  
 		end 
 	end
@@ -636,107 +632,9 @@ spawn(function()
 	end
 end)
 
-local ESCAPE_SPEED = 350
-local ESCAPE_HEIGHT = 350
-local HEALTH_THRESHOLD = 0.25
-local followPlatform = nil
-local currentTween = nil
-local followConnection = nil
-
-local function createFollowPlatform(position)
-	if followPlatform then
-		followPlatform:Destroy()
-	end
-	followPlatform = Instance.new("Part")
-	followPlatform.Size = Vector3.new(4, 1, 4)
-	followPlatform.Anchored = true
-	followPlatform.CanCollide = false
-	followPlatform.Transparency = 1
-	followPlatform.Position = position
-	followPlatform.Parent = workspace
-end
-
-local function destroyFollowPlatform()
-	if followPlatform then
-		followPlatform:Destroy()
-		followPlatform = nil
-	end
-	if followConnection then
-		followConnection:Disconnect()
-		followConnection = nil
-	end
-	if currentTween then
-		currentTween:Cancel()
-		currentTween = nil
-	end
-end
-
-local function startEscape(char)
-	if isEscaping then return end
-	isEscaping = true
-
-	if currentTarget then
-		addToBlacklist(currentTarget)
-		currentTarget = nil
-	end
-
-	local hrp = char:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
-
-	createFollowPlatform(hrp.Position - Vector3.new(0, 2.5, 0))
-
-	local targetPos = hrp.Position + Vector3.new(0, 10000, 0)
-	local distance = (targetPos - followPlatform.Position).Magnitude
-	local time = distance / ESCAPE_SPEED
-
-	currentTween = game:GetService("TweenService"):Create(
-		followPlatform,
-		TweenInfo.new(time, Enum.EasingStyle.Linear),
-		{Position = targetPos}
-	)
-
-	followConnection = RunService.Heartbeat:Connect(function()
-		if not isEscaping or not followPlatform or not hrp.Parent then
-			isEscaping = false
-			destroyFollowPlatform()
-			return
-		end
-		hrp.CFrame = CFrame.new(followPlatform.Position + Vector3.new(0, 2.5, 0))
-	end)
-
-	currentTween.Completed:Connect(function()
-		isEscaping = false
-		destroyFollowPlatform()
-	end)
-
-	currentTween:Play()
-end
-
-local function setupEscapeSystem(char)
-	local hum = char:FindFirstChild("Humanoid")
-	if not hum then return end
-
-	hum.HealthChanged:Connect(function()
-		if hum.Health > 0 and hum.Health / hum.MaxHealth <= HEALTH_THRESHOLD and isInCombat() then
-			if not isEscaping then
-				task.spawn(function()
-					startEscape(char)
-				end)
-			end
-		end
-		if hum.Health > 0 and hum.Health / hum.MaxHealth >= 0.75 and isInCombat() then
-			if isEscaping then
-				isEscaping = false
-			end
-		end
-	end)
-end
-
 if player.Character then
-	setupEscapeSystem(player.Character)
 	setupSitPrevention(player.Character)
 end
 player.CharacterAdded:Connect(function()
 	setupSitPrevention(player.Character)
-	setupEscapeSystem(player.Character)
 end)
