@@ -281,8 +281,8 @@ local uiConner = Instance.new("UICorner", hopButton)
 uiConner.CornerRadius = UDim.new(0.3, 0)
 
 hopButton.MouseButton1Click:Connect(function()
-	teleporting = true
 	safeTeleport()
+	teleporting = true
 end)
 
 local toggleButton = Instance.new("ImageButton")
@@ -331,8 +331,8 @@ end
 local function checkPvpAndHop()	
 	local pvp = player:GetAttribute("PvpDisabled")
 	if pvp == true and not teleporting then
-		teleporting = true
 		safeTeleport()
+		teleporting = true
 	end
 end
 
@@ -438,8 +438,8 @@ RunService.Heartbeat:Connect(function()
 			targetStartTime = now
 		else
 			if not isInCombat() and not teleporting then
-				teleporting = true
 				safeTeleport()
+				teleporting = true
 			end
 			return
 		end
@@ -461,8 +461,8 @@ spawn(function()
 	while task.wait(1)  do
 		local elapsed = tick() - START_TIME
 		if elapsed >= HOP_AFTER_MINUTES * 60 and not teleporting then
-			teleporting = true
 			safeTeleport()
+			teleporting = true
 			break  
 		end 
 	end
