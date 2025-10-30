@@ -490,7 +490,7 @@ RunService.Heartbeat:Connect(function()
 			addToBlacklist(currentTarget)
 			currentTarget = nil
 			targetStartTime = 0
-		elseif now - targetStartTime >= getgenv().SkipTargetTime then
+		elseif now - targetStartTime >= getgenv().Setting.SkipTargetTime then
 			addToBlacklist(currentTarget)
 			currentTarget = nil
 			targetStartTime = 0
@@ -530,7 +530,7 @@ local START_TIME = tick()
 spawn(function()
 	while task.wait(1)  do
 		local elapsed = tick() - START_TIME
-		if elapsed >= getgenv().HopTime * 60 and not teleporting then
+		if elapsed >= getgenv().Setting.HopTime * 60 and not teleporting then
 			teleporting = true
 			task.spawn(function()
 				startEscape()
