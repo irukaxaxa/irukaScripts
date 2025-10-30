@@ -579,7 +579,7 @@ RunService.Heartbeat:Connect(function()
 
 	if currentTarget then
 		if not isTargetAlive(currentTarget) then
-			addToBlacklist()
+			addToBlacklist(currentTarget)
 			currentTarget = nil
 			targetStartTime = 0
 		elseif now - targetStartTime >= getgenv().Setting.SkipTargetTime then
