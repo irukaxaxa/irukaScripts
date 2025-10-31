@@ -12,11 +12,6 @@ local isEscaping = false
 player:WaitForChild("DataLoaded", 30)
 
 local function safeTeleport()
-	--[[pcall(function()
-		if writefile then
-			writefile("BloxFruits/BlacklistedServer.json", HttpService:JSONEncode({serverId = game.JobId}))
-		end
-	end)--]]
 	local PlaceID = game.PlaceId
 	local AllIDs = {}
 	local foundAnything = ""
@@ -351,7 +346,7 @@ hopButton.MouseButton1Click:Connect(function()
 	if not teleporting then
 		teleporting = true
 		task.spawn(function()
-			startEscape()
+			startEscape(player.Character)
 		end)
 		safeTeleport()
 	end
@@ -384,6 +379,10 @@ end)
 RunService.Heartbeat:Connect(function()
 	local inc = getBountyIncrease()
 	local currentBounty = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Bounty/Honor")
+	if currentBounty.Value >= 30000000 then
+		teleporting = true
+		player:Kick("You reached 30m!")
+	end
 	local state
 	if teleporting then
 		state = "Hopping"
@@ -462,10 +461,9 @@ local function checkPvpAndHop()
 	if pvp == true and not teleporting then
 		teleporting = true
 		task.spawn(function()
-			startEscape()
+			startEscape(player.Character)
 		end)
 		safeTeleport()
-
 	end
 end
 
@@ -543,8 +541,17 @@ local function findNewTarget()
 
 			if isInBlacklist(plr) then continue end
 
+			if getgenv().Setting.DontAttackFriend and player:IsFriendsWith(plr.UserId) then continue end
+
 			if getgenv().Setting.Team == "Marines" then
 				if plr.Team.Name == "Marines" then continue end
+			end
+
+			if plr:GetAttribute("CurrentLocation") then
+				local loc = plr:GetAttribute("CurrentLocation")
+				if loc == "Island 1" or loc == "Island 2" or loc == "Island 3" or loc == "Island 4" or loc == "Island 5" then
+					continue 
+				end
 			end
 
 			if (pvp == nil or pvp == false) and targetLevel and not isInSafeZone(plr) then
@@ -574,13 +581,31 @@ local function isInCombat()
 	return combat.Visible == true and combat.Text ~= "⚔️In Combat⚔️"
 end
 
+local lastSent = nil
+
+local function sendChat()
+	if #getgenv().Setting.ChatAfterKill.MessageList == 0 then return end
+
+	local selected
+	repeat
+		selected = getgenv().Setting.ChatAfterKill.MessageList[math.random(#getgenv().Setting.ChatAfterKill.MessageList)]
+	until selected ~= lastSent or #getgenv().Setting.ChatAfterKill.MessageList == 1 
+
+	lastSent = selected
+	game.TextChatService.TextChannels.RBXGeneral:SendAsync(selected)
+end
+
 RunService.Heartbeat:Connect(function()
 	local now = tick()
 
 	if currentTarget then
 		if not isTargetAlive(currentTarget) then
+			addToBlacklist(currentTarget)
 			currentTarget = nil
 			targetStartTime = 0
+			if getgenv().Setting.ChatAfterKill.Enabled then
+				sendChat()
+			end
 		elseif now - targetStartTime >= getgenv().Setting.SkipTargetTime then
 			addToBlacklist(currentTarget)
 			currentTarget = nil
@@ -596,7 +621,7 @@ RunService.Heartbeat:Connect(function()
 			if not isInCombat() and not teleporting then
 				teleporting = true
 				task.spawn(function()
-					startEscape()
+					startEscape(player.Character)
 				end)
 				safeTeleport()
 			end
@@ -624,7 +649,7 @@ spawn(function()
 		if elapsed >= getgenv().Setting.HopTime * 60 and not teleporting then
 			teleporting = true
 			task.spawn(function()
-				startEscape()
+				startEscape(player.Character)
 			end)
 			safeTeleport()
 			break  
@@ -651,16 +676,6 @@ spawn(function()
 		end
 	end
 end)
-
---[[player.CharacterAdded:Connect(function(char)
-	char:WaitForChild("Humanoid")
-	task.wait(1)
-
-	local tool = player.Backpack:FindFirstChild(SelectWeapon)
-	if tool then
-		char.Humanoid:EquipTool(tool)
-	end
-end)]]--
 
 local function IsEntityAlive(entity)
 	if not entity then return false end
@@ -709,11 +724,7 @@ local function attackNoCoolDown()
 		end
 	end
 	if not equippedWeapon then return end
-	--[[if hrp:FindFirstChild("Buddha") then
-		attackRange =1000
-	else
-		attackRange =60
-	end]]--
+	
 	local enemiesInRange = GetEnemiesInRange(character, attackRange)
 	if equippedWeapon:FindFirstChild("LeftClickRemote") then
 		local attackCount = 1  
