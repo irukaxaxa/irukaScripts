@@ -73,7 +73,7 @@ local function safeTeleport()
 					TPReturner()
 				end
 			end)
-			wait(1)
+			wait(2)
 		end
 	end
 	Teleport()
@@ -384,6 +384,10 @@ end)
 RunService.Heartbeat:Connect(function()
 	local inc = getBountyIncrease()
 	local currentBounty = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Bounty/Honor")
+	if currentBounty.Value >= 30000000 then
+		teleporting = true
+		player:Kick("You reached 30m!")
+	end
 	local state
 	if teleporting then
 		state = "Hopping"
@@ -465,7 +469,6 @@ local function checkPvpAndHop()
 			startEscape(player.Character)
 		end)
 		safeTeleport()
-		
 	end
 end
 
@@ -534,7 +537,7 @@ local function findNewTarget()
 				if hum.Health > 0 then return plr end
 				continue
 			end
-			
+
 			if isAdmin(plr) and not teleporting then
 				teleporting = true
 				safeTeleport()
@@ -542,18 +545,20 @@ local function findNewTarget()
 			end
 
 			if isInBlacklist(plr) then continue end
-			
+
+			if getgenv().Setting.DontAttackFriend and player:IsFriendsWith(plr.UserId) then continue end
+
 			if getgenv().Setting.Team == "Marines" then
 				if plr.Team.Name == "Marines" then continue end
 			end
-			
+
 			if plr:GetAttribute("CurrentLocation") then
 				local loc = plr:GetAttribute("CurrentLocation")
 				if loc == "Island 1" or loc == "Island 2" or loc == "Island 3" or loc == "Island 4" or loc == "Island 5" then
 					continue 
 				end
 			end
-			
+
 			if (pvp == nil or pvp == false) and targetLevel and not isInSafeZone(plr) then
 				local diff = math.abs(myLevel.Value - targetLevel.Value)
 				if diff <= myLevel.Value * 0.25 then
@@ -581,6 +586,20 @@ local function isInCombat()
 	return combat.Visible == true and combat.Text ~= "⚔️In Combat⚔️"
 end
 
+local lastSent = nil
+
+local function sendChat()
+	if #getgenv().Setting.ChatAfterKill.MessageList == 0 then return end
+
+	local selected
+	repeat
+		selected = getgenv().Setting.ChatAfterKill.MessageList[math.random(#getgenv().Setting.ChatAfterKill.MessageList)]
+	until selected ~= lastSent or #getgenv().Setting.ChatAfterKill.MessageList == 1 
+
+	lastSent = selected
+	game.TextChatService.TextChannels.RBXGeneral:SendAsync(selected)
+end
+
 RunService.Heartbeat:Connect(function()
 	local now = tick()
 
@@ -589,7 +608,9 @@ RunService.Heartbeat:Connect(function()
 			addToBlacklist(currentTarget)
 			currentTarget = nil
 			targetStartTime = 0
-			
+			if getgenv().Setting.ChatAfterKill.Enabled then
+				sendChat()
+			end
 		elseif now - targetStartTime >= getgenv().Setting.SkipTargetTime then
 			addToBlacklist(currentTarget)
 			currentTarget = nil
