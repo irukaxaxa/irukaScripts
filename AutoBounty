@@ -535,11 +535,11 @@ local function findNewTarget()
 				continue
 			end
 
-			if isAdmin(plr) and not teleporting then
+			--[[if isAdmin(plr) and not teleporting then
 				teleporting = true
 				safeTeleport()
 				return nil
-			end
+			end]]--
 
 			if isInBlacklist(plr) then continue end
 
